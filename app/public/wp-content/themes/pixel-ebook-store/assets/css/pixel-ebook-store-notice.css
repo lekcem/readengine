@@ -1,0 +1,65 @@
+/* NOTICE */
+.pixel-ebook-store-theme-info-notice {
+    padding: 10px 0;
+}
+h2.pixel-ebook-store-notice-h2 {
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    font-size: 2.3em;
+}
+.pixel-ebook-store-theme-notice-content {
+    display: flex !important;
+    align-items: center;
+    gap: 30px !important;
+}
+a#pixel-ebook-store-themeinfo-button, a#pixel-ebook-store-bundle-button {
+    padding: 4px 10px !important;
+    font-size: 14px;
+    font-weight: 600;
+}
+a#pixel-ebook-store-themeinfo-button {
+    margin-right: 30px;
+}
+a#pixel-ebook-store-bundle-button {
+    background: #657EFF;
+    border: none !important;
+    padding: 5px 25px !important;
+}
+a#pixel-ebook-store-bundle-button:hover {
+    background: #000 !important;
+    color: #fff !important;
+}
+.notice-content {
+    width: 60%;
+    padding-left: 40px;
+}
+.notice-image{
+    width: 40%;
+    text-align: center;
+}
+.notice-image img {
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+p.pixel-ebook-store-notice-p {
+    color: #fff;
+    font-size: 14px;
+}
+.inner-notice-buttons{
+    margin-top: 30px;
+}
+.pixel-ebook-store-btn-theme-info.bundlee {
+    margin: 0 15px;
+}
+.pixel-ebook-store-btn-theme-info.live-demoo{
+    background: #ffffff !important;
+    color: #000 !important;
+}
+.notice-theme-info-class{
+    background:linear-gradient(81deg, #E8411D 0%, #FAAC52 100%) !important;
+}
+h2.pixel-ebook-store-notice-h2 {
+    color: #fff;
+}
