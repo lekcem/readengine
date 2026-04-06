@@ -328,3 +328,4 @@ function ebook_store_excerpt_length($length) {
     return 20;
 }
 add_filter('excerpt_length', 'ebook_store_excerpt_length');
+

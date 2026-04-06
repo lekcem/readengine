@@ -11,7 +11,11 @@ get_header(); ?>
             <div class="author-header">
                 <?php if (has_post_thumbnail()) : ?>
                     <div class="author-photo-large">
-                        <?php the_post_thumbnail('medium'); ?>
+                        <?php the_post_thumbnail('author-medium'); ?>
+                    </div>
+                <?php else : ?>
+                    <div class="author-photo-large no-photo">
+                        <span>👤</span>
                     </div>
                 <?php endif; ?>
                 
