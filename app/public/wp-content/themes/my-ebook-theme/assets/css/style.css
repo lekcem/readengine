@@ -585,3 +585,134 @@ body {
         flex-direction: column;
     }
 }
+
+
+/* Our Authors Section - Homepage */
+.our-authors {
+    padding: 4rem 0;
+    background: var(--light-bg);
+}
+
+.authors-grid-home {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.author-card-home {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.author-card-home:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.author-card-home .author-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 1.5rem;
+}
+
+.author-card-home .author-card-photo {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--secondary-color);
+    transition: var(--transition);
+}
+
+.author-card-home:hover .author-card-photo {
+    border-color: var(--accent-color);
+    transform: scale(1.05);
+}
+
+.author-card-home .author-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-card-home .no-photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: var(--light-bg);
+}
+
+.author-card-home .author-card-name {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.author-card-home .author-card-bio {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.author-card-home .author-book-count {
+    display: inline-block;
+    background: var(--secondary-color);
+    color: var(--white);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.view-all-link {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.view-all-button {
+    display: inline-block;
+    background: transparent;
+    color: var(--secondary-color);
+    padding: 0.75rem 2rem;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    border: 2px solid var(--secondary-color);
+    transition: var(--transition);
+}
+
+.view-all-button:hover {
+    background: var(--secondary-color);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments for authors grid */
+@media (max-width: 768px) {
+    .authors-grid-home {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+    
+    .author-card-home .author-card-photo {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .author-card-home .author-card-name {
+        font-size: 1.1rem;
+    }
+}
+
