@@ -20,6 +20,7 @@ function ebook_store_setup() {
     // Set thumbnail sizes
     add_image_size('book-cover', 300, 450, true);
     add_image_size('author-photo', 200, 200, true);
+    add_image_size('author-thumb', 150, 150, true);
 }
 add_action('after_setup_theme', 'ebook_store_setup');
 
@@ -86,7 +87,7 @@ function ebook_store_cpt() {
         'hierarchical' => false,
         'menu_position' => 6,
         'menu_icon' => 'dashicons-businessperson',
-        'supports' => array('title', 'editor', 'thumbnail'),
+        'supports' => array('title', 'editor', 'thumbnail', 'excerpt'),
     );
     register_post_type('authors', $author_args);
 }
@@ -117,6 +118,7 @@ function ebook_store_taxonomies() {
         'show_admin_column' => true,
         'query_var' => true,
         'rewrite' => array('slug' => 'genre'),
+        'show_in_rest' => true, // Enable for block editor
     );
     register_taxonomy('genre', array('books'), $genre_args);
     
@@ -142,6 +144,7 @@ function ebook_store_taxonomies() {
         'show_admin_column' => true,
         'query_var' => true,
         'rewrite' => array('slug' => 'age-group'),
+        'show_in_rest' => true, // Enable for block editor
     );
     register_taxonomy('age_group', array('books'), $age_args);
 }
@@ -149,14 +152,17 @@ add_action('init', 'ebook_store_taxonomies');
 
 // Add Meta Boxes for Book-Author Relationship
 function ebook_store_add_meta_boxes() {
-    add_meta_box(
-        'book_author',
-        __('Book Author', 'ebook-store'),
-        'ebook_store_author_meta_box_callback',
-        'books',
-        'side',
-        'default'
-    );
+    // Only show author meta box if user is admin or editor
+    if (current_user_can('administrator') || current_user_can('editor')) {
+        add_meta_box(
+            'book_author',
+            __('Book Author', 'ebook-store'),
+            'ebook_store_author_meta_box_callback',
+            'books',
+            'side',
+            'default'
+        );
+    }
     
     add_meta_box(
         'book_details',
@@ -196,15 +202,10 @@ function ebook_store_author_meta_box_callback($post) {
 }
 
 function ebook_store_details_meta_box_callback($post) {
-    $price = get_post_meta($post->ID, '_book_price', true);
     $isbn = get_post_meta($post->ID, '_book_isbn', true);
     $download_link = get_post_meta($post->ID, '_book_download_link', true);
     $publication_date = get_post_meta($post->ID, '_book_publication_date', true);
     ?>
-    <p>
-        <label for="book_price"><?php _e('Price ($):', 'ebook-store'); ?></label>
-        <input type="text" id="book_price" name="book_price" value="<?php echo esc_attr($price); ?>" style="width: 100%;">
-    </p>
     <p>
         <label for="book_isbn"><?php _e('ISBN:', 'ebook-store'); ?></label>
         <input type="text" id="book_isbn" name="book_isbn" value="<?php echo esc_attr($isbn); ?>" style="width: 100%;">
@@ -240,10 +241,6 @@ function ebook_store_save_meta_box_data($post_id) {
     
     if (isset($_POST['book_author_select'])) {
         update_post_meta($post_id, '_book_author', sanitize_text_field($_POST['book_author_select']));
-    }
-    
-    if (isset($_POST['book_price'])) {
-        update_post_meta($post_id, '_book_price', sanitize_text_field($_POST['book_price']));
     }
     
     if (isset($_POST['book_isbn'])) {
@@ -329,29 +326,162 @@ function ebook_store_excerpt_length($length) {
 }
 add_filter('excerpt_length', 'ebook_store_excerpt_length');
 
-function redirectSubsToFrontend(){
+// Modify search to include books and authors
+function ebook_store_search_filter($query) {
+    if ($query->is_search && !is_admin() && $query->is_main_query()) {
+        $query->set('post_type', array('books', 'authors'));
+        $query->set('posts_per_page', 12);
+    }
+    return $query;
+}
+add_action('pre_get_posts', 'ebook_store_search_filter');
+
+// Redirect subscribers to frontend
+function redirectSubsToFrontend() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+    
     $ourCurrentUser = wp_get_current_user();
-    $userNumRoles = count($ourCurrentUser->roles);
-    $userRole = $ourCurrentUser->roles[0];
-    if($userNumRoles == 1 AND $userRole == 'subscriber'){
+    
+    if (in_array('subscriber', $ourCurrentUser->roles)) {
         wp_redirect(site_url('/'));
-        exit; //tell PHP to stop once someone is redirected
+        exit;
     }
 }
 add_action('admin_init', 'redirectSubsToFrontend');
 
-function noSubsAdminBar(){
-        if(!is_user_logged_in()){
-            return;
-        }
-        $ourCurrentUser = wp_get_current_user();
-
-        if(!empty($ourCurrentUser->roles) && is_array($ourCurrentUser->roles)){
-            $userNumRoles = count($ourCurrentUser->roles);
-            $userRole = $ourCurrentUser->roles[0];
-            if($userNumRoles == 1 AND $userRole == 'subscriber'){
-                show_admin_bar(false);
-            }
-        }
+// Remove admin bar for subscribers
+function noSubsAdminBar() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+    
+    $ourCurrentUser = wp_get_current_user();
+    
+    if (in_array('subscriber', $ourCurrentUser->roles)) {
+        show_admin_bar(false);
+    }
 }
-add_action('wp_loaded', 'noSubsAdminBar');
+add_action('after_setup_theme', 'noSubsAdminBar');
+
+// Custom login logo URL
+function custom_login_logo_url() {
+    return home_url();
+}
+add_filter('login_headerurl', 'custom_login_logo_url');
+
+// Custom login logo title
+function custom_login_logo_url_title() {
+    return get_bloginfo('name');
+}
+add_filter('login_headertitle', 'custom_login_logo_url_title');
+
+// Redirect after login
+function custom_login_redirect($redirect_to, $request, $user) {
+    if (isset($user->roles) && in_array('subscriber', $user->roles)) {
+        return home_url();
+    }
+    return $redirect_to;
+}
+add_filter('login_redirect', 'custom_login_redirect', 10, 3);
+
+// Redirect after registration
+function custom_register_redirect() {
+    return home_url();
+}
+add_filter('registration_redirect', 'custom_register_redirect');
+
+// Allow authors to manage genres and age groups
+function allow_authors_to_manage_taxonomies() {
+    $role = get_role('author');
+    
+    if ($role) {
+        // Add capabilities for taxonomies
+        $caps = array(
+            'manage_categories',
+            'edit_terms',
+            'delete_terms',
+            'assign_terms',
+            'manage_genre_terms',
+            'edit_genre_terms',
+            'delete_genre_terms',
+            'assign_genre_terms',
+            'manage_age_group_terms',
+            'edit_age_group_terms',
+            'delete_age_group_terms',
+            'assign_age_group_terms'
+        );
+        
+        foreach ($caps as $cap) {
+            $role->add_cap($cap);
+        }
+    }
+}
+add_action('init', 'allow_authors_to_manage_taxonomies', 20);
+
+// Completely block authors from accessing authors post type
+function block_authors_from_authors_cpt() {
+    if (current_user_can('author')) {
+        global $pagenow;
+        
+        // Block direct access to authors list
+        if ($pagenow == 'edit.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'authors') {
+            wp_redirect(admin_url('edit.php?post_type=books'));
+            exit;
+        }
+        
+        // Block access to edit author pages
+        if ($pagenow == 'post.php' && isset($_GET['post']) && get_post_type($_GET['post']) == 'authors') {
+            wp_redirect(admin_url('edit.php?post_type=books'));
+            exit;
+        }
+        
+        // Block access to new author page
+        if ($pagenow == 'post-new.php' && isset($_GET['post_type']) && $_GET['post_type'] == 'authors') {
+            wp_redirect(admin_url('edit.php?post_type=books'));
+            exit;
+        }
+    }
+}
+add_action('admin_init', 'block_authors_from_authors_cpt');
+
+// Hide authors from admin menu for authors
+function hide_authors_menu_for_authors() {
+    if (current_user_can('author')) {
+        ?>
+        <style>
+            #menu-posts-authors,
+            #menu-posts-authors *,
+            li[class*="posts-authors"],
+            .toplevel_page_edit-post_type-authors {
+                display: none !important;
+            }
+        </style>
+        <script>
+            jQuery(document).ready(function($) {
+                $('#menu-posts-authors').remove();
+                $('.toplevel_page_edit-post_type-authors').remove();
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_head', 'hide_authors_menu_for_authors');
+
+// Add custom image sizes to media library
+function ebook_store_add_image_sizes_to_admin($sizes) {
+    return array_merge($sizes, array(
+        'author-thumb' => __('Author Thumbnail', 'ebook-store'),
+        'book-cover' => __('Book Cover', 'ebook-store'),
+    ));
+}
+add_filter('image_size_names_choose', 'ebook_store_add_image_sizes_to_admin');
+
+// Flush rewrite rules on theme activation
+function ebook_store_rewrite_flush() {
+    ebook_store_cpt();
+    ebook_store_taxonomies();
+    flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, 'ebook_store_rewrite_flush');

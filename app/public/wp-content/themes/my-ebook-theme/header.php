@@ -24,36 +24,63 @@
             </div>
 
             <nav id="site-navigation" class="main-navigation">
-                <?php
-                wp_nav_menu(array(
-                    'theme_location' => 'primary',
-                    'menu_id' => 'primary-menu',
-                    'fallback_cb' => false,
-                ));
-                ?>
+                <ul id="primary-menu" class="menu">
+                    <li class="menu-item">
+                        <a href="<?php echo esc_url(home_url('/')); ?>">
+                            🏠 <?php _e('Home', 'ebook-store'); ?>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="<?php echo esc_url(get_post_type_archive_link('books')); ?>">
+                            📚 <?php _e('Books', 'ebook-store'); ?>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="<?php echo esc_url(get_post_type_archive_link('authors')); ?>">
+                            ✍️ <?php _e('Authors', 'ebook-store'); ?>
+                        </a>
+                    </li>
+                </ul>
             </nav>
 
-            <div class="header-links">
-                <?php
-                if(is_user_logged_in()){ ?>
-                <a href="<?php echo esc_url(site_url('/books'));?>" class="auth-buttons">View books</a>
-
-                <a href="<?php echo wp_logout_url(); ?>" class="auth-buttons">Log Out</a>
-                <?php
-                }
-                else{ ?>
-                    <a href="<?php echo wp_login_url();?>" class="auth-buttons">Login</a>
-                    <a href="<?php echo wp_registration_url(); ?>" class="auth-buttons">Sign Up</a>
-                <?php } ?>
+            <!-- User Auth Buttons -->
+            <div class="header-auth">
+                <?php if (is_user_logged_in()) : ?>
+                    <div class="user-menu" id="user-menu">
+                        <div class="user-greeting" id="user-greeting">
+                            👋 <?php echo esc_html(wp_get_current_user()->display_name); ?>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <?php if (current_user_can('administrator')) : ?>
+                                <a href="<?php echo esc_url(admin_url()); ?>" class="auth-buttons">
+                                    ⚙️ <?php _e('Admin', 'ebook-store'); ?>
+                                </a>
+                            <?php endif; ?>
+                            <a href="<?php echo esc_url(get_post_type_archive_link('books')); ?>" class="auth-buttons">
+                                📚 <?php _e('Browse Books', 'ebook-store'); ?>
+                            </a>
+                            <a href="<?php echo esc_url(get_post_type_archive_link('authors')); ?>" class="auth-buttons">
+                                ✍️ <?php _e('Browse Authors', 'ebook-store'); ?>
+                            </a>
+                            <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="auth-buttons logout">
+                                🚪 <?php _e('Log Out', 'ebook-store'); ?>
+                            </a>
+                        </div>
+                    </div>
+                <?php else : ?>
+                    <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>" class="auth-buttons login-btn">
+                        🔑 <?php _e('Login', 'ebook-store'); ?>
+                    </a>
+                    <a href="<?php echo esc_url(wp_registration_url()); ?>" class="auth-buttons signup-btn">
+                        ✨ <?php _e('Sign Up', 'ebook-store'); ?>
+                    </a>
+                <?php endif; ?>
             </div>
 
+            <!-- Search Bar -->
             <div class="header-search">
-                <button class="search-toggle" aria-label="Toggle search">
-                    <span class="search-icon">🔍</span>
-                </button>
-                <div class="search-form-container" style="display: none;">
-                    <?php get_template_part('template-parts/search-form'); ?>
-                </div>
+                <?php get_template_part('template-parts/search-form'); ?>
             </div>
 
             <button class="mobile-menu-toggle" aria-label="Menu">

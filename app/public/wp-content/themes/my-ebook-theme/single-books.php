@@ -34,14 +34,7 @@ get_header(); ?>
                     <?php endif; ?>
                     
                     <div class="book-meta">
-                        <?php
-                        $price = get_post_meta(get_the_ID(), '_book_price', true);
-                        if ($price) : ?>
-                            <div class="book-price">
-                                <span class="label"><?php _e('Price:', 'ebook-store'); ?></span>
-                                <span class="price">$<?php echo esc_html($price); ?></span>
-                            </div>
-                        <?php endif; ?>
+
                         
                         <?php
                         $isbn = get_post_meta(get_the_ID(), '_book_isbn', true);
