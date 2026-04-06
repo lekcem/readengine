@@ -1,6 +1,6 @@
 <?php
 /**
- * Template for single book display
+ * Template for single book display with Ebook Download Manager
  */
 
 get_header(); ?>
@@ -34,8 +34,6 @@ get_header(); ?>
                     <?php endif; ?>
                     
                     <div class="book-meta">
-
-                        
                         <?php
                         $isbn = get_post_meta(get_the_ID(), '_book_isbn', true);
                         if ($isbn) : ?>
@@ -69,6 +67,8 @@ get_header(); ?>
                                 );
                             }
                             echo implode(', ', $genre_links);
+                        else :
+                            _e('None', 'ebook-store');
                         endif;
                         ?>
                     </div>
@@ -78,22 +78,46 @@ get_header(); ?>
                         <?php
                         $age_groups = get_the_terms(get_the_ID(), 'age_group');
                         if ($age_groups && !is_wp_error($age_groups)) :
+                            $age_links = array();
                             foreach ($age_groups as $age_group) {
-                                echo '<a href="' . esc_url(get_term_link($age_group)) . '">' . esc_html($age_group->name) . '</a>';
+                                $age_links[] = sprintf(
+                                    '<a href="%s">%s</a>',
+                                    esc_url(get_term_link($age_group)),
+                                    esc_html($age_group->name)
+                                );
                             }
+                            echo implode(', ', $age_links);
+                        else :
+                            _e('None', 'ebook-store');
                         endif;
                         ?>
                     </div>
                     
                     <?php
-                    $download_link = get_post_meta(get_the_ID(), '_book_download_link', true);
-                    if ($download_link) : ?>
+                    // Download section - uses plugin if available
+                    $has_ebook_file = get_post_meta(get_the_ID(), '_edm_file_url', true);
+                    $external_link = get_post_meta(get_the_ID(), '_book_download_link', true);
+                    
+                    if ($has_ebook_file) {
+                        // Use the Ebook Download Manager plugin
+                        echo do_shortcode('[download_ebook id="' . get_the_ID() . '" text="Download Ebook" show_size="yes" show_count="yes"]');
+                    } elseif ($external_link) {
+                        // Fallback to external link
+                        $downloads = get_post_meta(get_the_ID(), '_download_count', true) ?: 0;
+                        ?>
                         <div class="book-actions">
-                            <a href="<?php echo esc_url($download_link); ?>" class="download-button" target="_blank">
-                                <?php _e('Purchase / Download', 'ebook-store'); ?> →
+                            <a href="<?php echo esc_url($external_link); ?>" class="download-button download-count-btn" data-id="<?php echo get_the_ID(); ?>" target="_blank">
+                                📥 <?php _e('Purchase / Download', 'ebook-store'); ?> →
                             </a>
+                            <div class="download-stats-wrapper">
+                                <span class="download-icon">📊</span>
+                                <span class="download-count-display"><?php echo $downloads; ?></span>
+                                <span class="download-label"><?php _e('downloads', 'ebook-store'); ?></span>
+                            </div>
                         </div>
-                    <?php endif; ?>
+                        <?php
+                    }
+                    ?>
                 </div>
             </div>
             
@@ -128,31 +152,33 @@ get_header(); ?>
             
             <?php
             // Related books
-            $related_args = array(
-                'post_type' => 'books',
-                'posts_per_page' => 4,
-                'post__not_in' => array(get_the_ID()),
-                'tax_query' => array(
-                    'relation' => 'OR',
-                    array(
-                        'taxonomy' => 'genre',
-                        'field' => 'term_id',
-                        'terms' => wp_list_pluck($genres, 'term_id'),
+            if (!empty($genres) && !is_wp_error($genres)) :
+                $genre_ids = wp_list_pluck($genres, 'term_id');
+                $related_args = array(
+                    'post_type' => 'books',
+                    'posts_per_page' => 4,
+                    'post__not_in' => array(get_the_ID()),
+                    'tax_query' => array(
+                        array(
+                            'taxonomy' => 'genre',
+                            'field' => 'term_id',
+                            'terms' => $genre_ids,
+                        ),
                     ),
-                ),
-            );
-            
-            $related_books = new WP_Query($related_args);
-            if ($related_books->have_posts()) : ?>
-                <div class="related-books">
-                    <h2><?php _e('You Might Also Like', 'ebook-store'); ?></h2>
-                    <div class="books-grid">
-                        <?php while ($related_books->have_posts()) : $related_books->the_post(); ?>
-                            <?php get_template_part('template-parts/book-card'); ?>
-                        <?php endwhile; ?>
+                );
+                
+                $related_books = new WP_Query($related_args);
+                if ($related_books->have_posts()) : ?>
+                    <div class="related-books">
+                        <h2><?php _e('You Might Also Like', 'ebook-store'); ?></h2>
+                        <div class="books-grid">
+                            <?php while ($related_books->have_posts()) : $related_books->the_post(); ?>
+                                <?php get_template_part('template-parts/book-card'); ?>
+                            <?php endwhile; ?>
+                        </div>
                     </div>
-                </div>
-                <?php wp_reset_postdata();
+                    <?php wp_reset_postdata();
+                endif;
             endif; ?>
         </article>
     <?php endwhile; ?>

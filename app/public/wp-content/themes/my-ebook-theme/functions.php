@@ -202,18 +202,9 @@ function ebook_store_author_meta_box_callback($post) {
 }
 
 function ebook_store_details_meta_box_callback($post) {
-    $isbn = get_post_meta($post->ID, '_book_isbn', true);
-    $download_link = get_post_meta($post->ID, '_book_download_link', true);
     $publication_date = get_post_meta($post->ID, '_book_publication_date', true);
     ?>
-    <p>
-        <label for="book_isbn"><?php _e('ISBN:', 'ebook-store'); ?></label>
-        <input type="text" id="book_isbn" name="book_isbn" value="<?php echo esc_attr($isbn); ?>" style="width: 100%;">
-    </p>
-    <p>
-        <label for="book_download_link"><?php _e('Download/Purchase Link:', 'ebook-store'); ?></label>
-        <input type="url" id="book_download_link" name="book_download_link" value="<?php echo esc_url($download_link); ?>" style="width: 100%;">
-    </p>
+    
     <p>
         <label for="book_publication_date"><?php _e('Publication Date:', 'ebook-store'); ?></label>
         <input type="date" id="book_publication_date" name="book_publication_date" value="<?php echo esc_attr($publication_date); ?>" style="width: 100%;">
@@ -241,14 +232,6 @@ function ebook_store_save_meta_box_data($post_id) {
     
     if (isset($_POST['book_author_select'])) {
         update_post_meta($post_id, '_book_author', sanitize_text_field($_POST['book_author_select']));
-    }
-    
-    if (isset($_POST['book_isbn'])) {
-        update_post_meta($post_id, '_book_isbn', sanitize_text_field($_POST['book_isbn']));
-    }
-    
-    if (isset($_POST['book_download_link'])) {
-        update_post_meta($post_id, '_book_download_link', esc_url_raw($_POST['book_download_link']));
     }
     
     if (isset($_POST['book_publication_date'])) {
