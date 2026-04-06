@@ -328,3 +328,30 @@ function ebook_store_excerpt_length($length) {
     return 20;
 }
 add_filter('excerpt_length', 'ebook_store_excerpt_length');
+
+function redirectSubsToFrontend(){
+    $ourCurrentUser = wp_get_current_user();
+    $userNumRoles = count($ourCurrentUser->roles);
+    $userRole = $ourCurrentUser->roles[0];
+    if($userNumRoles == 1 AND $userRole == 'subscriber'){
+        wp_redirect(site_url('/'));
+        exit; //tell PHP to stop once someone is redirected
+    }
+}
+add_action('admin_init', 'redirectSubsToFrontend');
+
+function noSubsAdminBar(){
+        if(!is_user_logged_in()){
+            return;
+        }
+        $ourCurrentUser = wp_get_current_user();
+
+        if(!empty($ourCurrentUser->roles) && is_array($ourCurrentUser->roles)){
+            $userNumRoles = count($ourCurrentUser->roles);
+            $userRole = $ourCurrentUser->roles[0];
+            if($userNumRoles == 1 AND $userRole == 'subscriber'){
+                show_admin_bar(false);
+            }
+        }
+}
+add_action('wp_loaded', 'noSubsAdminBar');

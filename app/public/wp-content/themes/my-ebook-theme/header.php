@@ -33,6 +33,20 @@
                 ?>
             </nav>
 
+            <div class="header-links">
+                <?php
+                if(is_user_logged_in()){ ?>
+                <a href="<?php echo esc_url(site_url('/books'));?>" class="auth-buttons">View books</a>
+
+                <a href="<?php echo wp_logout_url(); ?>" class="auth-buttons">Log Out</a>
+                <?php
+                }
+                else{ ?>
+                    <a href="<?php echo wp_login_url();?>" class="auth-buttons">Login</a>
+                    <a href="<?php echo wp_registration_url(); ?>" class="auth-buttons">Sign Up</a>
+                <?php } ?>
+            </div>
+
             <div class="header-search">
                 <button class="search-toggle" aria-label="Toggle search">
                     <span class="search-icon">🔍</span>

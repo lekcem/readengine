@@ -14,8 +14,8 @@ function ebook_post_types(){
 	));
 
 	register_post_type('books', array(
-		//'capability_type' => 'book',
-		//'map_meta_cap'=> true,
+		'capability_type' => 'book',
+		'map_meta_cap'=> true,
 		'public' => true,
 		'labels' => array(
 			'name'=> "Books",
