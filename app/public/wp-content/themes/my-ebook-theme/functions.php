@@ -468,3 +468,51 @@ function ebook_store_rewrite_flush() {
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'ebook_store_rewrite_flush');
+
+
+
+
+// auto approval
+// Enable auto-approval for new registrations
+function setup_auto_approval_registration() {
+    // Enable user registration
+    update_option('users_can_register', 1);
+    
+    // Set default role to subscriber
+    update_option('default_role', 'subscriber');
+}
+add_action('init', 'setup_auto_approval_registration');
+
+// Force auto-approve all new registrations and remove blocking meta
+function auto_approve_new_users($user_id) {
+    // Remove any custom meta that might be blocking approval
+    delete_user_meta($user_id, 'pw_user_status');
+    delete_user_meta($user_id, 'account_status');
+    delete_user_meta($user_id, 'approval_status');
+    delete_user_meta($user_id, 'require_admin_approval');
+    
+    // Ensure user has subscriber role
+    $user = new WP_User($user_id);
+    $user->set_role('subscriber');
+}
+add_action('user_register', 'auto_approve_new_users');
+
+
+// Add password field to registration
+function add_password_field() {
+    ?>
+    <p>
+        <label for="password">Choose a Password<br />
+        <input type="password" name="password" id="password" class="input" required /></label>
+    </p>
+    <?php
+}
+add_action('register_form', 'add_password_field');
+
+// Validate and save password
+function handle_password_registration($user_id) {
+    if (!empty($_POST['password'])) {
+        wp_set_password($_POST['password'], $user_id);
+    }
+}
+add_action('user_register', 'handle_password_registration');
